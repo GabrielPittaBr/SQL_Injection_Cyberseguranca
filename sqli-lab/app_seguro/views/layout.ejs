@@ -1,0 +1,80 @@
+<%
+  // layout.ejs — moldura comum de todas as telas (usada via express-ejs-layouts).
+  // A variável "modo" ('vulneravel' | 'seguro') muda só o banner e a cor.
+  // Este MESMO arquivo existe igual na app segura; o que muda é o valor de "modo".
+  const ehVuln = modo === 'vulneravel';
+  const corBanner = ehVuln ? '#b00020' : '#1b7f3b';
+  const rotuloBanner = ehVuln
+    ? '🔴 APP VULNERÁVEL — inseguro de propósito (porta 3000)'
+    : '🟢 APP SEGURA — versão corrigida (porta 3001)';
+%>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= titulo %> — Laboratório SQL Injection</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      margin: 0; background: #f4f5f7; color: #1c1c1e;
+    }
+    .banner {
+      background: <%= corBanner %>; color: #fff; padding: 10px 16px;
+      font-weight: 600; text-align: center; letter-spacing: .2px;
+    }
+    header.nav {
+      background: #22252a; color: #fff; padding: 12px 16px;
+      display: flex; gap: 16px; align-items: center;
+    }
+    header.nav a { color: #fff; text-decoration: none; font-weight: 600; }
+    header.nav a:hover { text-decoration: underline; }
+    header.nav .marca { margin-right: auto; opacity: .85; }
+    main { max-width: 820px; margin: 24px auto; padding: 0 16px; }
+    .card {
+      background: #fff; border: 1px solid #e2e4e8; border-radius: 10px;
+      padding: 20px; margin-bottom: 20px;
+    }
+    h1 { font-size: 1.4rem; margin: 0 0 14px; }
+    label { display: block; font-weight: 600; margin: 12px 0 4px; }
+    input[type=text], input[type=password] {
+      width: 100%; padding: 10px; border: 1px solid #c8ccd2; border-radius: 8px;
+      font-size: 1rem;
+    }
+    button {
+      margin-top: 16px; background: #2d6cdf; color: #fff; border: 0;
+      padding: 10px 18px; border-radius: 8px; font-size: 1rem; cursor: pointer;
+    }
+    button:hover { background: #245bc0; }
+    .alerta { padding: 12px 14px; border-radius: 8px; margin: 12px 0; font-size: .95rem; }
+    .alerta.erro { background: #fdecea; border: 1px solid #f5c6cb; color: #7a1a25; }
+    .alerta.ok   { background: #e7f6ec; border: 1px solid #b7dfc4; color: #14532d; }
+    pre {
+      background: #0f172a; color: #e2e8f0; padding: 14px; border-radius: 8px;
+      overflow-x: auto; font-size: .85rem; line-height: 1.4;
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #e6e8ec; font-size: .92rem; }
+    th { background: #f0f2f5; }
+    .rotulo-sql { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: #64748b; margin: 16px 0 4px; font-weight: 700; }
+    footer { text-align: center; color: #8a9099; font-size: .8rem; padding: 24px; }
+  </style>
+</head>
+<body>
+  <div class="banner"><%= rotuloBanner %></div>
+  <header class="nav">
+    <span class="marca">🧪 Loja Exemplo — Laboratório SQLi</span>
+    <a href="/">Login</a>
+    <a href="/busca">Busca de produtos</a>
+  </header>
+
+  <main>
+    <%- body %>
+  </main>
+
+  <footer>
+    Ambiente educacional e isolado — apenas para aprender segurança. Não use dados reais.
+  </footer>
+</body>
+</html>

@@ -1,0 +1,11 @@
+# Dependências do Node
+node_modules/
+
+# Configuração local (contém credenciais do laboratório).
+# O modelo versionado é o .env.example — o .env real fica FORA do git.
+.env
+
+# Logs e arquivos temporários
+*.log
+npm-debug.log*
+.DS_Store

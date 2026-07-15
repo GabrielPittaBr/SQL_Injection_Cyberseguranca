@@ -1,0 +1,51 @@
+<%
+  // resultado.ejs — resultado da busca. IGUAL nas duas apps.
+  // Mostra a tabela de resultados. Na app vulnerável, um UNION faz aparecer
+  // aqui dados de OUTRA tabela (ex.: username e senha_hash de usuarios),
+  // porque as 4 colunas do SELECT são preenchidas pelo que o atacante injetou.
+%>
+<div class="card">
+  <h1>Buscar produtos</h1>
+  <form method="GET" action="/buscar" autocomplete="off">
+    <label for="q">Nome do produto</label>
+    <input type="text" id="q" name="q" value="<%= termo %>" placeholder="ex.: teclado">
+    <button type="submit">Buscar</button>
+  </form>
+</div>
+
+<% if (erro) { %>
+  <div class="card">
+    <div class="alerta erro"><%= erro %></div>
+  </div>
+<% } %>
+
+<div class="card">
+  <h1>Resultados <% if (termo) { %>para "<%= termo %>"<% } %></h1>
+
+  <% if (produtos && produtos.length > 0) { %>
+    <table>
+      <thead>
+        <tr><th>id</th><th>nome</th><th>descricao</th><th>preco</th></tr>
+      </thead>
+      <tbody>
+        <% produtos.forEach(function (p) { %>
+          <tr>
+            <td><%= p.id %></td>
+            <td><%= p.nome %></td>
+            <td><%= p.descricao %></td>
+            <td><%= p.preco %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } else if (!erro) { %>
+    <p>Nenhum produto encontrado.</p>
+  <% } %>
+</div>
+
+<% if (sqlExecutada) { %>
+  <div class="card">
+    <div class="rotulo-sql">SQL que o servidor executou (mostrada só para fins didáticos)</div>
+    <pre><%= sqlExecutada.trim() %></pre>
+  </div>
+<% } %>

@@ -1,0 +1,49 @@
+# ============================================================================
+#  docker-compose.yml  —  Sobe um MySQL 8 já pronto para o laboratório
+# ============================================================================
+#  Use este arquivo para não precisar instalar MySQL na sua máquina.
+#
+#  Comando para subir:      docker compose up -d
+#  Ver os logs do banco:    docker compose logs -f mysql
+#  Derrubar (mantém dados):  docker compose stop
+#  Derrubar e APAGAR dados:  docker compose down -v
+#
+#  Na PRIMEIRA subida, o MySQL executa automaticamente todos os arquivos
+#  montados em /docker-entrypoint-initdb.d, em ordem alfabética. Por isso
+#  numeramos 01, 02, 03 — para garantir schema -> seed -> usuário restrito.
+#
+#  IMPORTANTE: esses scripts SÓ rodam quando o volume de dados está vazio
+#  (primeira vez). Se você mudar o schema/seed depois, rode:
+#     docker compose down -v && docker compose up -d
+#  para recriar o banco do zero.
+# ============================================================================
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: sqli_lab_mysql
+    restart: unless-stopped
+    # ⚠️ Estas credenciais são de LABORATÓRIO. Nunca exponha este container
+    #    na internet e nunca reutilize estas senhas em produção.
+    environment:
+      MYSQL_ROOT_PASSWORD: root_lab_senha
+      MYSQL_DATABASE: sqli_lab
+    ports:
+      # host:container — a app Node conecta em 127.0.0.1:3306
+      - "3306:3306"
+    volumes:
+      # Dados persistidos entre reinícios do container.
+      - mysql_data:/var/lib/mysql
+      # Scripts de inicialização (rodam só na primeira subida, em ordem).
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+      - ./db/least_privilege.sql:/docker-entrypoint-initdb.d/03-least_privilege.sql:ro
+    # Healthcheck para saber quando o banco está realmente pronto.
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_lab_senha"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mysql_data:

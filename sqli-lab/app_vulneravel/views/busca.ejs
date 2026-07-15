@@ -1,0 +1,13 @@
+<%
+  // busca.ejs — formulário de busca de produtos. IGUAL nas duas apps.
+%>
+<div class="card">
+  <h1>Buscar produtos</h1>
+  <p>Digite parte do nome de um produto. Ex.: <em>notebook</em>, <em>mouse</em>, <em>ssd</em>.</p>
+
+  <form method="GET" action="/buscar" autocomplete="off">
+    <label for="q">Nome do produto</label>
+    <input type="text" id="q" name="q" value="<%= termo %>" placeholder="ex.: teclado">
+    <button type="submit">Buscar</button>
+  </form>
+</div>

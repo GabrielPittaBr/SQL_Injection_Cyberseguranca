@@ -1,0 +1,37 @@
+<%
+  // login.ejs — tela de login. Este arquivo é IGUAL nas duas apps.
+  // O que muda é o que o server.js passa: a app vulnerável manda "sqlExecutada"
+  // e o erro cru do MySQL; a app segura nunca manda a SQL nem detalhes de erro.
+%>
+<div class="card">
+  <h1>Entrar na conta</h1>
+
+  <% if (usuarioLogado) { %>
+    <div class="alerta ok">
+      ✅ Autenticado como <strong><%= usuarioLogado.username %></strong>
+      (papel: <%= usuarioLogado.papel %>, id: <%= usuarioLogado.id %>).
+    </div>
+    <p><a href="/logout">Sair</a></p>
+  <% } %>
+
+  <% if (erro) { %>
+    <div class="alerta erro"><%= erro %></div>
+  <% } %>
+
+  <form method="POST" action="/login" autocomplete="off">
+    <label for="username">Usuário</label>
+    <input type="text" id="username" name="username" placeholder="ex.: admin">
+
+    <label for="senha">Senha</label>
+    <input type="password" id="senha" name="senha" placeholder="sua senha">
+
+    <button type="submit">Entrar</button>
+  </form>
+</div>
+
+<% if (sqlExecutada) { %>
+  <div class="card">
+    <div class="rotulo-sql">SQL que o servidor executou (mostrada só para fins didáticos)</div>
+    <pre><%= sqlExecutada.trim() %></pre>
+  </div>
+<% } %>

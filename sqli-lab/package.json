@@ -1,0 +1,21 @@
+{
+  "name": "sqli-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Laboratório educacional de SQL Injection (app vulnerável x app segura). Uso didático, local e isolado.",
+  "scripts": {
+    "start:vuln": "node app_vulneravel/server.js",
+    "start:seguro": "node app_seguro/server.js",
+    "dev": "concurrently -n VULN,SEGURO -c red,green \"npm:start:vuln\" \"npm:start:seguro\""
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-ejs-layouts": "^2.5.1",
+    "mysql2": "^3.11.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
