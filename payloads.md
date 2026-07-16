@@ -80,8 +80,8 @@ os dois precisam ter o **mesmo número de colunas** (descoberto acima: **4**).
 > A app vulnerável liga `multipleStatements: true` no pool (veja
 > `app_vulneravel/db.js`). Isso permite emendar um **segundo comando** com `;`.
 > **NÃO** rode isto se quiser manter os dados do laboratório — é destrutivo.
-> Sirva apenas para **explicar o risco**. Depois recrie o banco com
-> `docker compose down -v && docker compose up -d`.
+> Sirva apenas para **explicar o risco**. Depois recrie o banco reaplicando
+> `db/schema.sql` e `db/seed.sql` (ver README).
 
 | # | Payload | Campo | O que faz / por que funciona |
 |---|---------|-------|------------------------------|

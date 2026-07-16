@@ -4,14 +4,14 @@ Roteiro cronometrado para apresentar o laboratório casando **fala** + **demo**.
 Os tempos são um guia; ajuste ao seu ritmo. Total-alvo: **~18 min** + perguntas.
 
 > ✅ **Checklist antes de começar** (faça 5 min antes, não no palco):
-> - [ ] MySQL no ar (`docker compose ps` mostra o container "healthy").
+> - [ ] MySQL local no ar e scripts `db/` já aplicados (schema, seed, least_privilege).
 > - [ ] App vulnerável rodando em <http://localhost:3000>.
 > - [ ] App segura rodando em <http://localhost:3001>.
 > - [ ] Duas abas do navegador já abertas (uma em cada porta).
 > - [ ] `payloads.md` aberto num editor para copiar/colar rápido.
 > - [ ] Zoom da fonte do navegador aumentado (a plateia precisa ler a query).
-> - [ ] Se já rodou a demo bônus destrutiva antes, recrie o banco:
->       `docker compose down -v && docker compose up -d`.
+> - [ ] Se já rodou a demo bônus destrutiva antes, recrie o banco reaplicando
+>       `db/schema.sql` e `db/seed.sql`.
 
 ---
 
@@ -37,8 +37,6 @@ loja, duas versões.
 > arquivo' — e ele obedece. SQL Injection é isso: o **dado** do usuário virando
 > **código** do sistema. A frase-chave da aula é: **dado nunca deveria virar
 > código**."
-
-*(Sem demo aqui — é o gancho conceitual.)*
 
 ---
 
@@ -151,14 +149,14 @@ loja, duas versões.
 
 - **App não abre:** confira o terminal; rode `npm run dev` de novo. Veja o
   `README.md` (seção "Como rodar").
-- **Erro de conexão com o banco:** o MySQL pode não ter subido ainda. Rode
-  `docker compose ps` (deve estar "healthy"). Se preciso, `docker compose up -d`.
+- **Erro de conexão com o banco:** confira se o serviço do MySQL está rodando e
+  se a senha no `.env` está correta.
 - **`-- ` não comenta no navegador:** troque por `#` (ex.: `admin'#`). Explique
   que o navegador "comeu" o espaço obrigatório do `-- `.
 - **UNION dá erro de coluna:** confirme que são **4** colunas
   (`id, nome, descricao, preco`) e que o `UNION SELECT` tem exatamente 4 itens.
-- **Banco "bagunçado" por causa da demo bônus destrutiva:** recrie do zero com
-  `docker compose down -v && docker compose up -d`.
+- **Banco "bagunçado" por causa da demo bônus destrutiva:** recrie do zero
+  reaplicando `db/schema.sql` e `db/seed.sql`.
 
 ---
 

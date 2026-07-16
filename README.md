@@ -7,8 +7,8 @@ Um laboratório **didático** com duas versões da mesma aplicação web:
 - 🟢 **App segura** (porta **3001**) — a *mesma* aplicação, corrigida, para você
   *ver a defesa funcionar*.
 
-Stack: **Node.js + Express + EJS + mysql2** (com pool de conexões e
-`mysql2/promise`), **MySQL 8** via **Docker**, config por **dotenv**.
+Stack: **Node.js + Express + EJS + mysql2** (pool de conexões, `mysql2/promise`),
+**MySQL 8** local, config por **dotenv**.
 
 ---
 
@@ -32,7 +32,6 @@ Stack: **Node.js + Express + EJS + mysql2** (com pool de conexões e
 .  (raiz do repositório)
 ├── README.md                 ← você está aqui
 ├── package.json
-├── docker-compose.yml        ← sobe o MySQL 8 já pronto
 ├── .env.example              ← copie para .env
 ├── db/
 │   ├── schema.sql            ← cria database + tabelas
@@ -47,14 +46,7 @@ Stack: **Node.js + Express + EJS + mysql2** (com pool de conexões e
 │   ├── server.js
 │   ├── db.js
 │   └── views/
-└── docs/                     ← material didático (leia em ordem)
-    ├── 01-o-que-e-sql-injection.md
-    ├── 02-anatomia-do-ataque.md
-    ├── 03-demo-login-bypass.md
-    ├── 04-demo-union-extraction.md
-    ├── 05-mitigacao-prepared-statements.md
-    ├── 06-mitigacao-defesa-em-camadas.md
-    └── 07-roteiro-da-apresentacao.md
+└── docs/                     ← material didático (leia em ordem, 01 → 07)
 ```
 
 ---
@@ -62,30 +54,30 @@ Stack: **Node.js + Express + EJS + mysql2** (com pool de conexões e
 ## ✅ Pré-requisitos
 
 - **Node.js 18+** e **npm** — <https://nodejs.org>
-- **Docker Desktop** (caminho recomendado) — <https://www.docker.com/products/docker-desktop/>
-  - *Ou* um **MySQL 8** instalado localmente (caminho alternativo, mais abaixo).
+- **MySQL 8** instalado e rodando na máquina — <https://dev.mysql.com/downloads/>
 
-Todos os comandos abaixo são executados **na raiz do projeto** (a pasta onde
-está este `README.md`).
+Todos os comandos abaixo rodam **na raiz do projeto** (a pasta deste `README.md`).
 
 ---
 
-## 🚀 Como rodar (caminho recomendado: Docker)
+## 🚀 Como rodar
 
-### 1) Suba o MySQL com Docker
+### 1) Aplique os scripts SQL (nesta ordem)
 
-```bash
-docker compose up -d
-```
-
-Isso baixa o MySQL 8, cria o banco `sqli_lab` e, **na primeira subida**, aplica
-automaticamente, nesta ordem: `schema.sql` → `seed.sql` → `least_privilege.sql`.
-
-Confira se está pronto (aguarde ficar "healthy"):
+Substitua `-u root` pelo seu usuário administrador do MySQL:
 
 ```bash
-docker compose ps
+mysql -u root -p < db/schema.sql
+mysql -u root -p < db/seed.sql
+mysql -u root -p < db/least_privilege.sql
 ```
+
+> **Windows (PowerShell):** se `mysql` não for reconhecido, use o caminho
+> completo do executável, por exemplo:
+> `& "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p < db/schema.sql`
+
+Isso cria o banco `sqli_lab`, popula com dados fictícios e cria o usuário
+restrito `app_seguro` (só `SELECT`), usado pela app segura.
 
 ### 2) Instale as dependências do Node
 
@@ -103,16 +95,35 @@ Copy-Item .env.example .env
 cp .env.example .env
 ```
 
-Os valores padrão do `.env.example` já batem com o `docker-compose.yml` — não
-precisa mudar nada para o caminho Docker.
+Edite o `.env` e aponte o usuário/senha do **root** (usado pela app vulnerável)
+para os do **seu MySQL local**:
 
-### 4) Suba as duas apps ao mesmo tempo
+```dotenv
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=sqli_lab
+
+# App vulnerável (privilégio alto — use seu root local):
+DB_VULN_USER=root
+DB_VULN_PASSWORD=SUA_SENHA_DO_ROOT
+PORT_VULN=3000
+
+# App segura (usuário restrito criado pelo least_privilege.sql):
+DB_SEGURO_USER=app_seguro
+DB_SEGURO_PASSWORD=senha_app_seguro
+PORT_SEGURO=3001
+```
+
+> Para trocar a senha do usuário `app_seguro`, edite o `db/least_privilege.sql`
+> (antes de aplicá-lo) **e** o `.env`.
+
+### 4) Suba as duas apps
 
 ```bash
 npm run dev
 ```
 
-Isso roda a **vulnerável** e a **segura** juntas (usando `concurrently`):
+Roda a **vulnerável** e a **segura** juntas (via `concurrently`):
 
 - 🔴 Vulnerável: <http://localhost:3000>
 - 🟢 Segura:     <http://localhost:3001>
@@ -123,8 +134,9 @@ Isso roda a **vulnerável** e a **segura** juntas (usando `concurrently`):
 > npm run start:seguro   # porta 3001
 > ```
 
-Pronto! Agora siga o passo a passo em [`docs/03-demo-login-bypass.md`](docs/03-demo-login-bypass.md)
-e [`docs/04-demo-union-extraction.md`](docs/04-demo-union-extraction.md).
+Pronto! Agora siga o passo a passo em
+[`docs/03-demo-login-bypass.md`](docs/03-demo-login-bypass.md) e
+[`docs/04-demo-union-extraction.md`](docs/04-demo-union-extraction.md).
 
 ---
 
@@ -144,70 +156,16 @@ Para demonstrar o **login normal** antes de atacar:
 
 ---
 
-## 🧰 Caminho alternativo: MySQL instalado localmente (sem Docker)
+## 🔁 Recomeçar do zero (resetar o banco)
 
-Se você já tem um **MySQL 8** rodando na máquina, dá para pular o Docker.
-
-### 1) Aplique os scripts SQL (nesta ordem)
-
-Substitua `-u root` pelo seu usuário administrador do MySQL:
+Se você rodou a **demo bônus destrutiva** (stacked queries que apagam/alteram
+dados) e quer o banco limpo, basta reaplicar o schema e o seed (o `schema.sql`
+já faz `DROP TABLE` antes de recriar):
 
 ```bash
 mysql -u root -p < db/schema.sql
 mysql -u root -p < db/seed.sql
-mysql -u root -p < db/least_privilege.sql
 ```
-
-> No Windows, se `mysql` não for reconhecido, use o caminho completo do
-> executável, por exemplo:
-> `& "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p < db/schema.sql`
-
-### 2) Ajuste o `.env` para o seu MySQL
-
-Edite o `.env` e aponte usuário/senha do **root** (usado pela app vulnerável)
-para os do seu MySQL local. Exemplo:
-
-```dotenv
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_NAME=sqli_lab
-
-# App vulnerável (privilégio alto — use seu root local):
-DB_VULN_USER=root
-DB_VULN_PASSWORD=SUA_SENHA_DO_ROOT
-PORT_VULN=3000
-
-# App segura (usuário restrito criado pelo least_privilege.sql):
-DB_SEGURO_USER=app_seguro
-DB_SEGURO_PASSWORD=senha_app_seguro
-PORT_SEGURO=3001
-```
-
-> Se quiser trocar a senha do usuário `app_seguro`, edite tanto o
-> `db/least_privilege.sql` (antes de aplicá-lo) quanto o `.env`.
-
-### 3) Instale e rode
-
-```bash
-npm install
-npm run dev
-```
-
----
-
-## 🔁 Recomeçar do zero (resetar o banco)
-
-Se você rodou a **demo bônus destrutiva** (stacked queries que apagam/alteram
-dados) e quer o banco limpo de novo:
-
-```bash
-# Com Docker (apaga o volume e recria tudo do schema/seed):
-docker compose down -v
-docker compose up -d
-```
-
-Com MySQL local, basta reaplicar `schema.sql` e `seed.sql` (o `schema.sql` já
-faz `DROP TABLE` das tabelas antes de recriá-las).
 
 ---
 
@@ -215,9 +173,10 @@ faz `DROP TABLE` das tabelas antes de recriá-las).
 
 | Sintoma | Provável causa / solução |
 |---------|--------------------------|
-| App mostra erro de conexão ao subir | O MySQL ainda não está pronto. Rode `docker compose ps` e espere ficar "healthy". |
-| `ECONNREFUSED 127.0.0.1:3306` | MySQL não está no ar, ou a porta 3306 está ocupada por outro MySQL. Pare o outro serviço ou mude a porta no `docker-compose.yml` **e** no `.env`. |
-| `Access denied for user 'app_seguro'` | O `least_privilege.sql` não foi aplicado. Com Docker: `docker compose down -v && docker compose up -d`. Local: reaplique o script. |
+| App mostra erro de conexão ao subir | O MySQL não está rodando, ou a senha no `.env` está errada. Confira o serviço do MySQL e o `DB_VULN_PASSWORD`. |
+| `ECONNREFUSED 127.0.0.1:3306` | MySQL não está no ar (inicie o serviço) ou usa outra porta. Ajuste `DB_PORT` no `.env`. |
+| `Access denied for user 'root'` | Senha do root errada no `.env`. Ajuste `DB_VULN_PASSWORD`. |
+| `Access denied for user 'app_seguro'` | O `least_privilege.sql` não foi aplicado. Reaplique o script. |
 | Porta 3000/3001 já em uso | Feche o processo que usa a porta, ou mude `PORT_VULN`/`PORT_SEGURO` no `.env`. |
 | Login normal (`admin`/`admin123`) não funciona | O `seed.sql` não rodou. Reaplique o seed. |
 | `-- ` não comenta no navegador | O navegador "comeu" o espaço obrigatório. Use `#` (ex.: `admin'#`). |
@@ -232,7 +191,7 @@ faz `DROP TABLE` das tabelas antes de recriá-las).
 4. [`docs/04-demo-union-extraction.md`](docs/04-demo-union-extraction.md) — demo: vazar senhas.
 5. [`docs/05-mitigacao-prepared-statements.md`](docs/05-mitigacao-prepared-statements.md) — a correção de raiz.
 6. [`docs/06-mitigacao-defesa-em-camadas.md`](docs/06-mitigacao-defesa-em-camadas.md) — camadas extras.
-7. [`docs/07-roteiro-da-apresentacao.md`](docs/07-roteiro-da-apresentacao.md) — roteiro de ~18 min.
+7. [`docs/07-roteiro-da-apresentacao.md`](docs/07-roteiro-da-apresentacao.md) — roteiro da apresentação.
 8. [`payloads.md`](payloads.md) — cheat-sheet para colar durante a demo.
 
 ---
