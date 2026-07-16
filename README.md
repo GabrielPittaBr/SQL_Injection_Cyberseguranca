@@ -246,4 +246,3 @@ faz `DROP TABLE` das tabelas antes de recriá-las).
 | Erros na tela | Mostra `err.sqlMessage` cru | Mensagem neutra; detalhe só no log |
 | Usuário do banco | `root` (privilégio máximo) | `app_seguro` (só `SELECT`) |
 | `multipleStatements` | `true` (permite stacked queries) | `false` |
-| Exemplo com ORM | — | Comentado no fim de `app_seguro/server.js` |
