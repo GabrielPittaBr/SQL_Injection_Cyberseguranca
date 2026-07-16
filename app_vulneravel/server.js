@@ -40,15 +40,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// Função utilitária: gera o hash SHA-256 (hex) da senha, igual ao SHA2(...,256)
-// gravado no banco pelo seed.sql. Assim o login "correto" também funciona.
 function hashSenha(senhaTextoPuro) {
   return crypto.createHash('sha256').update(senhaTextoPuro, 'utf8').digest('hex');
 }
 
-// ============================================================================
-//  ROTA: tela de login
-// ============================================================================
 app.get('/', (req, res) => {
   res.render('login', { titulo: 'Login' });
 });
@@ -111,7 +106,6 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Logout simples (só volta pra tela de login).
 app.get('/logout', (req, res) => res.redirect('/'));
 
 // ============================================================================
